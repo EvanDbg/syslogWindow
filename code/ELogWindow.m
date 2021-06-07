@@ -1,8 +1,13 @@
 #import <objc/runtime.h>
 #include <dlfcn.h>
-#include "syslogWindow.h"
+#include "ELogWindow.h"
 
-@implementation LogWindow
+extern CFNotificationCenterRef CFNotificationCenterGetDistributedCenter();
+
+#define ScreenWidth ([UIScreen mainScreen].bounds.size.width)
+#define ScreenHeight ([UIScreen mainScreen].bounds.size.height)
+
+@implementation ELogWindow
 
 -(id)init{
   self = [super initWithFrame:[UIScreen mainScreen].bounds];
@@ -13,15 +18,21 @@
     self.hidden = NO;
 
     // Setup the label stuff
-    textView = [[UITextView alloc] initWithFrame:CGRectMake(0,0,320,150)];
+    textView = [[UITextView alloc] initWithFrame:CGRectMake((ScreenWidth - 320)/2,34,320,150)];
     textView.textAlignment = NSTextAlignmentLeft;
     textView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.8f];
     textView.textColor = [UIColor whiteColor];
     textView.contentSize = textView.bounds.size;
     textView.clipsToBounds = YES;
-    textView.contentInset = UIEdgeInsetsZero;
-    textView.textContainer.lineFragmentPadding = 0;
-    textView.textContainerInset = UIEdgeInsetsMake(2.0f, 2.0f, 2.0f, 2.0f);
+    // textView.contentInset = UIEdgeInsetsZero;
+    // textView.textContainer.lineFragmentPadding = 0;
+    // textView.textContainerInset = UIEdgeInsetsMake(2.0f, 2.0f, 2.0f, 2.0f);
+
+    // UIEdgeInsets insets = textView.contentInset;
+    textView.contentInset = UIEdgeInsetsMake(5, 5, 5, 5);
+
+    textView.layer.cornerRadius = 7;
+    textView.layer.shadowRadius  = 7.0f;
 
     [self addSubview:textView];
 
@@ -35,6 +46,8 @@
 
 #define LINE_REGEX "(\\w+\\s+\\d+\\s+\\d+:\\d+:\\d+)\\s+(\\S+|)\\s+(\\w+)\\[(\\d+)\\]\\s+\\<(\\w+)\\>:\\s(.*)"
 -(void)addSyslogMessage:(NSString*)message{
+  [savedMessages addObject:message];
+  /*
   NSError *error = nil;
   NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@LINE_REGEX options:NSRegularExpressionCaseInsensitive error:&error];
   NSArray *matches = [regex matchesInString:message options:0 range:NSMakeRange(0, [message length])];
@@ -89,6 +102,7 @@
     // Save to full message log
     [savedMessages addObject:build];
   }
+  */
 
   // Only save the 10 latest messages
   if( [savedMessages count] > 10 ){
@@ -97,8 +111,11 @@
 
   // // Scroll to bottom
   NSMutableAttributedString *fullLog = [[NSMutableAttributedString alloc] initWithString:@""];
-  for(NSMutableAttributedString *previousLog in savedMessages){
-    [fullLog appendAttributedString:previousLog];
+  for(/*NSMutableAttributedString*/NSString *previousLog in savedMessages){
+    NSMutableAttributedString* logString = [[NSMutableAttributedString alloc] initWithString:previousLog];
+    UIColor* logColor = [UIColor whiteColor];
+    [logString addAttribute:NSForegroundColorAttributeName value:logColor range:NSMakeRange(0, logString.length)];
+    [fullLog appendAttributedString:logString/*previousLog*/];
     [fullLog appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@"\n"]];
   }
   [textView setAttributedText:fullLog];
@@ -127,8 +144,8 @@
     if( laactivatorClass == nil ){
         NSLog(@"Class 'LAActivator' not found. Activator is not installed.");
     }else{
-        [[laactivatorClass sharedInstance] registerListener:self forName:@"com.jontelang.syslogwindow.alpha"];
-        [[laactivatorClass sharedInstance] registerListener:self forName:@"com.jontelang.syslogwindow.hidden"];
+        [[laactivatorClass sharedInstance] registerListener:self forName:@"fun.yfyf.elogwindow.alpha"];
+        [[laactivatorClass sharedInstance] registerListener:self forName:@"fun.yfyf.elogwindow.hidden"];
     }
 }
 
@@ -136,9 +153,9 @@
 - (void)activator:(LAActivator *)activator 
      receiveEvent:(LAEvent *)event 
   forListenerName:(NSString *)listenerName{
-    if( [listenerName isEqualToString:@"com.jontelang.syslogwindow.alpha"] ){
+    if( [listenerName isEqualToString:@"fun.yfyf.elogwindow.alpha"] ){
       self.alpha = self.alpha == 1.0f ? 0.25f : 1.0f;
-    }else if( [listenerName isEqualToString:@"com.jontelang.syslogwindow.hidden"] ){
+    }else if( [listenerName isEqualToString:@"fun.yfyf.elogwindow.hidden"] ){
       self.hidden = !self.hidden;
     }else{
         NSLog(@"hello");
@@ -154,5 +171,9 @@
 //         }
 //     }
 // }
+
++(void)log:(NSString*)message {
+  CFNotificationCenterPostNotification(CFNotificationCenterGetDistributedCenter(), CFSTR("fun.yfyf.elogMethodCallback"), NULL,(__bridge CFDictionaryRef)@{@"message":message},YES);
+}
 
 @end

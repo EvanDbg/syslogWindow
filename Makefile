@@ -1,11 +1,10 @@
-TARGET=iphone:clang:8.4
-ARCHS = armv7 armv7s arm64
+ARCHS = arm64 arm64e
 
-include theos/makefiles/common.mk
+include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = syslogWindow
-syslogWindow_FILES = code/Tweak.xm code/syslog.m code/syslogWindow.m
-syslogWindow_FRAMEWORKS = CoreGraphics UIKit QuartzCore
+TWEAK_NAME = ELogWindow
+ELogWindow_FILES = code/Tweak.xm code/ELogWindow.m
+ELogWindow_FRAMEWORKS = CoreGraphics UIKit QuartzCore
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

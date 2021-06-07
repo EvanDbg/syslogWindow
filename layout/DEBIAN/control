@@ -1,9 +1,9 @@
-Package: com.jontelang.syslogwindow
-Name: syslogWindow
+Package: fun.yfyf.elogwindow
+Name: ELogWindow
 Depends: mobilesubstrate
 Version: 0.0.1
 Architecture: iphoneos-arm
-Description: Shows the syslog on your screen
-Maintainer: Jonathan Winger-lang
-Author: Jonathan Winger-lang
+Description: Shows the log on your screen
+Maintainer: EVAN
+Author: EVAN
 Section: Tweaks

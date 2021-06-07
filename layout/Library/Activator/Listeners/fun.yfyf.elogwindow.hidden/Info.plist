@@ -1,4 +1,4 @@
 {
-    title = "syslogWindow hidden toggle";
+    title = "ELogWindow hidden toggle";
     description = "Toggles the window itself";
 }

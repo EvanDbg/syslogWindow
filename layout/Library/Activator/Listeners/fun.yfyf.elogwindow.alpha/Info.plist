@@ -1,4 +1,4 @@
 {
-    title = "syslogWindow alpha toggle";
+    title = "ELogWindow alpha toggle";
     description = "Toggles the alpha";
 }

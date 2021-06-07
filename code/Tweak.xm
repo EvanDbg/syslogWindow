@@ -1,11 +1,9 @@
-
 extern "C" CFNotificationCenterRef CFNotificationCenterGetDistributedCenter();
-extern "C" int startTheSyslogThingy();
 
-#include "syslogWindow.h"
-static LogWindow *logWindow = nil;
+#include "ELogWindow.h"
+static ELogWindow *logWindow = nil;
 
-void syslogMethodCallback(CFNotificationCenterRef center, 
+void eLogMethodCallback(CFNotificationCenterRef center, 
                           void *observer, 
                           CFStringRef name, 
                           const void *object, 
@@ -16,24 +14,26 @@ void syslogMethodCallback(CFNotificationCenterRef center,
   }
 }
 
-%hook SBUIController
--(void)finishLaunching{
-   %orig();
-   logWindow = [[LogWindow alloc] init];
+// %hook SBUIController
+// -(void)finishLaunching{
+%hook SpringBoard
+- (void)applicationDidFinishLaunching:(id)application {
+  %orig();
+  logWindow = [[ELogWindow alloc] init];
 }
 %end
 
 %ctor{
     CFNotificationCenterAddObserver(CFNotificationCenterGetDistributedCenter(),
                                     NULL,
-                                    (CFNotificationCallback)syslogMethodCallback,
-                                    CFSTR("com.syslogWindow.syslogMethodCallback"),
+                                    (CFNotificationCallback)eLogMethodCallback,
+                                    CFSTR("fun.yfyf.elogMethodCallback"),
                                     NULL,
                                     CFNotificationSuspensionBehaviorCoalesce);
 
-    dispatch_queue_t backgroundQueue = dispatch_queue_create("bgSyslogQueue", 0);
-    dispatch_async(backgroundQueue, ^{
-        startTheSyslogThingy();
-    });
+    // dispatch_queue_t backgroundQueue = dispatch_queue_create("bgSyslogQueue", 0);
+    // dispatch_async(backgroundQueue, ^{
+    //     startTheSyslogThingy();
+    // });
 
 }
